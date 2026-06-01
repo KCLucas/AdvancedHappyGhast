@@ -48,11 +48,13 @@ public class GhastProgressionSystem {
                 double dz = z - data.lastZ;
                 double horizontalDist = Math.sqrt(dx * dx + dz * dz);
 
-                if (horizontalDist > 0.01 && player.getUuid().equals(data.ownerUuid)) {
-                    data.distanceTraveled += horizontalDist;
-                    if (data.level == 0 && data.distanceTraveled >= config.level1DistanceReq) {
-                        data.level = 1;
-                        player.sendMessage(net.minecraft.text.Text.literal("§6Your Ghast is now Calm! (Level 1)"), false);
+                if (horizontalDist > 0.01 && horizontalDist < 100.0) {
+                    if (player.getUuid().equals(data.ownerUuid)) {
+                        data.distanceTraveled += horizontalDist;
+                        if (data.level == 0 && data.distanceTraveled >= config.level1DistanceReq) {
+                            data.level = 1;
+                            player.sendMessage(net.minecraft.text.Text.literal("§6Your Ghast is now Calm! (Level 1)"), false);
+                        }
                     }
                 }
             }
@@ -60,19 +62,24 @@ public class GhastProgressionSystem {
             data.lastZ = z;
 
             if (player instanceof ServerPlayerEntity serverPlayer) {
+                double currentSpeed = ghast.getAttributeValue(EntityAttributes.FLYING_SPEED);
                 String ownerName = "Unknown";
-                String ownerUuidStr = data.ownerUuid != null ? data.ownerUuid.toString() : "";
 
-                // Resolve name from UUID
-                if (data.ownerUuid != null) {
-                    var p = world.getServer().getPlayerManager().getPlayer(data.ownerUuid);
-                    if (p != null) ownerName = p.getName().getString();
-                }
+                // Get player name for the owner display
+                var owner = world.getServer().getPlayerManager().getPlayer(data.ownerUuid);
+                if (owner != null) ownerName = owner.getName().getString();
 
+                // FIXED: Now sending all 9 arguments
                 ServerPlayNetworking.send(serverPlayer, new GhastDataPayload(
-                        data.level, data.distanceTraveled, ghast.getAttributeValue(net.minecraft.entity.attribute.EntityAttributes.FLYING_SPEED),
-                        config.level1DistanceReq, data.tearsSubmitted, data.starsSubmitted,
-                        ownerName, ownerUuidStr
+                        data.level,
+                        data.distanceTraveled,
+                        currentSpeed,
+                        config.level1DistanceReq,
+                        data.tearsSubmitted,
+                        data.starsSubmitted,
+                        ownerName,
+                        data.ownerUuid.toString(),
+                        config.fireballMode // 9th argument
                 ));
             }
         }

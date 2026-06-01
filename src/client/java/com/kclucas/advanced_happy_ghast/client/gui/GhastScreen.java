@@ -6,6 +6,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import java.util.List;
@@ -46,25 +47,37 @@ public class GhastScreen extends HandledScreen<GhastMenu> {
     @Override
     protected void drawForeground(DrawContext context, int mouseX, int mouseY) {
         int lvl = Advanced_Happy_GhastClient.currentGhastLevel;
-        double spd = Advanced_Happy_GhastClient.currentGhastSpeed;
 
         context.drawText(this.textRenderer, "§e§nGhast Status", 10, 10, 0xFFFFFFFF, false);
         context.drawText(this.textRenderer, "Owner: §b" + Advanced_Happy_GhastClient.currentOwnerName, 10, 24, 0xFFFFFFFF, false);
         context.drawText(this.textRenderer, "Level: " + lvl, 10, 34, 0xFFFFFFFF, false);
+        context.drawText(this.textRenderer, "Speed: " + String.format("%.3f", Advanced_Happy_GhastClient.currentGhastSpeed), 10, 44, 0xFFFFFFFF, false);
 
-        // Show speed and bonus percentage
-        String speedStr = String.format("Speed: %.3f", spd);
-        context.drawText(this.textRenderer, speedStr, 10, 44, 0xFFFFFFFF, false);
+        String reqText = "";
+        String slotLabel = "§8Upgrade:";
 
-        // Progression Text
-        String reqText = (lvl == 0) ? String.format("Dist: %.0f/%.0f", Advanced_Happy_GhastClient.currentGhastDistance, Advanced_Happy_GhastClient.currentMaxDistance)
-                : (lvl == 1) ? "Tears: " + Advanced_Happy_GhastClient.submittedTears + "/25"
-                  : (lvl == 2) ? "Star: " + Advanced_Happy_GhastClient.submittedStars + "/1"
-                    : "§aMax Level";
+        if (lvl == 0) {
+            reqText = String.format("Dist: %.0f/%.0f", Advanced_Happy_GhastClient.currentGhastDistance, Advanced_Happy_GhastClient.currentMaxDistance);
+        } else if (lvl == 1) {
+            reqText = "Tears: " + Advanced_Happy_GhastClient.submittedTears + "/25";
+        } else if (lvl == 2) {
+            reqText = "Star: " + Advanced_Happy_GhastClient.submittedStars + "/1";
+        } else if (lvl == 3) {
+            slotLabel = "§8Ammo:"; // CHANGE LABEL
+
+            // Get the item currently in the upgrade slot (index 0)
+            ItemStack ammoStack = this.handler.getSlot(0).getStack();
+            if (Advanced_Happy_GhastClient.currentFireballMode == 0) {
+                reqText = "§cFireballs Disabled";
+            } else if (ammoStack.isOf(net.minecraft.item.Items.FIRE_CHARGE)) {
+                reqText = "§6Charges: " + ammoStack.getCount() + "/64";
+            } else {
+                reqText = "§7Need: Fire Charges";
+            }
+        }
 
         context.drawText(this.textRenderer, reqText, 10, 58, 0xFFFFFFFF, false);
-
-        context.drawText(this.textRenderer, "§8Upgrade:", 106, 17, 0xFF404040, false);
+        context.drawText(this.textRenderer, slotLabel, 106, 17, 0xFF404040, false);
     }
 
     @Override

@@ -6,7 +6,7 @@ import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 
-public record GhastDataPayload(int level, double distance, double speed, double maxDist, int tears, int stars, String ownerName, String ownerUuid) implements CustomPayload {
+public record GhastDataPayload(int level, double distance, double speed, double maxDist, int tears, int stars, String ownerName, String ownerUuid, int fireballMode) implements CustomPayload {
     public static final Id<GhastDataPayload> ID = new Id<>(Identifier.of("advanced_happy_ghast", "ghast_data_sync"));
 
     public static final PacketCodec<RegistryByteBuf, GhastDataPayload> CODEC = PacketCodec.tuple(
@@ -18,6 +18,7 @@ public record GhastDataPayload(int level, double distance, double speed, double 
             PacketCodecs.VAR_INT, GhastDataPayload::stars,
             PacketCodecs.STRING, GhastDataPayload::ownerName,
             PacketCodecs.STRING, GhastDataPayload::ownerUuid,
+            PacketCodecs.VAR_INT, GhastDataPayload::fireballMode, // Added 9th field
             GhastDataPayload::new
     );
 

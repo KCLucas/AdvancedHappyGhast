@@ -16,6 +16,7 @@ public class Advanced_Happy_GhastClient implements ClientModInitializer {
 	public static int submittedStars = 0;
 	public static String currentOwnerName = "Unknown";
 	public static String currentOwnerUuid = "";
+	public static int currentFireballMode = 0;
 
 	@Override
 	public void onInitializeClient() {
@@ -35,8 +36,9 @@ public class Advanced_Happy_GhastClient implements ClientModInitializer {
 				currentMaxDistance = payload.maxDist();
 				submittedTears = payload.tears();
 				submittedStars = payload.stars();
-				currentOwnerName = payload.ownerName(); // Sync Name
-				currentOwnerUuid = payload.ownerUuid(); // Sync UUID
+				currentOwnerName = payload.ownerName();
+				currentOwnerUuid = payload.ownerUuid();
+				currentFireballMode = payload.fireballMode(); // ADD THIS LINE
 			});
 		});
 	}
