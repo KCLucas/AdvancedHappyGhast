@@ -60,14 +60,19 @@ public class GhastProgressionSystem {
             data.lastZ = z;
 
             if (player instanceof ServerPlayerEntity serverPlayer) {
-                double currentSpeed = ghast.getAttributeValue(EntityAttributes.FLYING_SPEED);
+                String ownerName = "Unknown";
+                String ownerUuidStr = data.ownerUuid != null ? data.ownerUuid.toString() : "";
+
+                // Resolve name from UUID
+                if (data.ownerUuid != null) {
+                    var p = world.getServer().getPlayerManager().getPlayer(data.ownerUuid);
+                    if (p != null) ownerName = p.getName().getString();
+                }
+
                 ServerPlayNetworking.send(serverPlayer, new GhastDataPayload(
-                        data.level,
-                        data.distanceTraveled,
-                        currentSpeed,
-                        config.level1DistanceReq,
-                        data.tearsSubmitted,
-                        data.starsSubmitted
+                        data.level, data.distanceTraveled, ghast.getAttributeValue(net.minecraft.entity.attribute.EntityAttributes.FLYING_SPEED),
+                        config.level1DistanceReq, data.tearsSubmitted, data.starsSubmitted,
+                        ownerName, ownerUuidStr
                 ));
             }
         }

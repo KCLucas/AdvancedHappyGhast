@@ -14,6 +14,8 @@ public class Advanced_Happy_GhastClient implements ClientModInitializer {
 	public static double currentMaxDistance = 2000.0;
 	public static int submittedTears = 0;
 	public static int submittedStars = 0;
+	public static String currentOwnerName = "Unknown";
+	public static String currentOwnerUuid = "";
 
 	@Override
 	public void onInitializeClient() {
@@ -33,6 +35,8 @@ public class Advanced_Happy_GhastClient implements ClientModInitializer {
 				currentMaxDistance = payload.maxDist();
 				submittedTears = payload.tears();
 				submittedStars = payload.stars();
+				currentOwnerName = payload.ownerName(); // Sync Name
+				currentOwnerUuid = payload.ownerUuid(); // Sync UUID
 			});
 		});
 	}

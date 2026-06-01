@@ -8,6 +8,7 @@ import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import java.util.List;
 
 public class GhastScreen extends HandledScreen<GhastMenu> {
     private static final Identifier TEXTURE = Identifier.of("minecraft", "textures/gui/container/generic_54.png");
@@ -25,26 +26,32 @@ public class GhastScreen extends HandledScreen<GhastMenu> {
         int y = (height - backgroundHeight) / 2;
         int lvl = Advanced_Happy_GhastClient.currentGhastLevel;
 
+        // 1. Draw standard chest background
         context.drawTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0.0f, 0.0f, backgroundWidth, backgroundHeight, 256, 256);
 
-        // Covering background slots
-        context.fill(x + 7, y + 17, x + 169, y + 89, 0xFFC6C6C6);
+        // 2. COVERING LOGIC (Hides the slot grid based on level)
+        // Cover top 4 rows
+        context.fill(x + 7, y + 7, x + 169, y + 89, 0xFFC6C6C6);
+        // Cover Row 5 (Locked if Lvl < 3)
         if (lvl < 3) context.fill(x + 7, y + 89, x + 169, y + 107, 0xFFC6C6C6);
+        // Cover Row 6 (Locked if Lvl < 2)
         if (lvl < 2) context.fill(x + 7, y + 107, x + 169, y + 125, 0xFFC6C6C6);
 
-        // Organic "Dashboard" box (Dark Gray but not black)
-        context.fill(x + 10, y + 20, x + 90, y + 85, 0xFF4A4A4A);
+        // 3. THE DARK BOX (Perfectly Symmetrical Alignment)
+        // Top/Left/Right Padding: 7 pixels.
+        // Bottom Padding: Row 5 starts at y+90, so ending at y+83 creates a 7 pixel gap.
+        context.fill(x + 7, y + 7, x + 102, y + 83, 0xFF4A4A4A);
     }
 
     @Override
     protected void drawForeground(DrawContext context, int mouseX, int mouseY) {
-        // Stats Labels (White text for high contrast)
-        context.drawText(this.textRenderer, "§e§nGhast Status", 15, 25, 0xFFFFFFFF, false);
+        // Stats Text (Relative to box top-left at 0,0)
+        context.drawText(this.textRenderer, "§e§nGhast Status", 10, 10, 0xFFFFFFFF, false);
 
-        context.drawText(this.textRenderer, "Level: " + Advanced_Happy_GhastClient.currentGhastLevel, 15, 40, 0xFFFFFFFF, false);
-        context.drawText(this.textRenderer, "Speed: " + String.format("%.3f", Advanced_Happy_GhastClient.currentGhastSpeed), 15, 50, 0xFFFFFFFF, false);
+        context.drawText(this.textRenderer, "Owner: §b" + Advanced_Happy_GhastClient.currentOwnerName, 10, 24, 0xFFFFFFFF, false);
+        context.drawText(this.textRenderer, "Level: " + Advanced_Happy_GhastClient.currentGhastLevel, 10, 34, 0xFFFFFFFF, false);
+        context.drawText(this.textRenderer, "Speed: " + String.format("%.3f", Advanced_Happy_GhastClient.currentGhastSpeed), 10, 44, 0xFFFFFFFF, false);
 
-        // Progression Tracking
         String reqText = "";
         if (Advanced_Happy_GhastClient.currentGhastLevel == 0) {
             reqText = String.format("Dist: %.0f/%.0f", Advanced_Happy_GhastClient.currentGhastDistance, Advanced_Happy_GhastClient.currentMaxDistance);
@@ -55,16 +62,27 @@ public class GhastScreen extends HandledScreen<GhastMenu> {
         } else {
             reqText = "§aMax Level";
         }
-        context.drawText(this.textRenderer, reqText, 15, 65, 0xFFFFFFFF, false);
+        context.drawText(this.textRenderer, reqText, 10, 58, 0xFFFFFFFF, false);
 
-        // Upgrade Slot label
-        context.drawText(this.textRenderer, "§8Upgrade:", 95, 14, 0xFF404040, false);
+        // ALIGNMENT FIX: "Upgrade:" label is moved lower (y=17) to center with the slot
+        context.drawText(this.textRenderer, "§8Upgrade:", 106, 17, 0xFF404040, false);
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         this.renderBackground(context, mouseX, mouseY, delta);
         super.render(context, mouseX, mouseY, delta);
+
+        // Tooltip check for Owner UUID
+        int x = (width - backgroundWidth) / 2;
+        int y = (height - backgroundHeight) / 2;
+        if (mouseX >= x + 15 && mouseX <= x + 100 && mouseY >= y + 30 && mouseY <= y + 40) {
+            context.drawTooltip(this.textRenderer, List.of(
+                    Text.literal("§7Owner UUID:"),
+                    Text.literal("§f" + Advanced_Happy_GhastClient.currentOwnerUuid)
+            ), mouseX, mouseY);
+        }
+
         this.drawMouseoverTooltip(context, mouseX, mouseY);
     }
 }
