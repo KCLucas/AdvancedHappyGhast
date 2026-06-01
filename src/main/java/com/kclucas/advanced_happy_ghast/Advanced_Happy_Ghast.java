@@ -39,18 +39,14 @@ public class Advanced_Happy_Ghast implements ModInitializer {
 	public static final String MOD_ID = "advanced_happy_ghast";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-
-	// Only one registration variable needed
 	public static ScreenHandlerType<GhastMenu> GHAST_SCREEN_HANDLER_TYPE;
 
 	@Override
 	public void onInitialize() {
-		// 1. Register All Payloads
 		PayloadTypeRegistry.playS2C().register(GhastDataPayload.ID, GhastDataPayload.CODEC);
 		PayloadTypeRegistry.playC2S().register(OpenMenuPayload.ID, OpenMenuPayload.CODEC);
 		PayloadTypeRegistry.playS2C().register(GhastScreenPayload.ID, GhastScreenPayload.CODEC);
 
-		// 2. Register Extended Screen Handler (Multiplayer Safe)
 		GHAST_SCREEN_HANDLER_TYPE = Registry.register(
 				Registries.SCREEN_HANDLER,
 				Identifier.of(MOD_ID, "ghast_menu"),
@@ -60,14 +56,12 @@ public class Advanced_Happy_Ghast implements ModInitializer {
 		GhastDataAttachment.register();
 		GhastProgressionSystem.register();
 
-		// 3. Handle Menu Opening Request
 		ServerPlayNetworking.registerGlobalReceiver(OpenMenuPayload.ID, (payload, context) -> {
 			context.server().execute(() -> {
 				ServerPlayerEntity player = context.player();
 				if (player.getVehicle() instanceof HappyGhastEntity ghast) {
 					GhastData data = ghast.getAttached(GhastDataAttachment.GHAST_DATA);
 					if (data != null) {
-						// Use the Extended Factory to send the level to the client constructor
 						player.openHandledScreen(new ExtendedScreenHandlerFactory<GhastScreenPayload>() {
 							@Override
 							public GhastScreenPayload getScreenOpeningData(ServerPlayerEntity player) {
@@ -79,10 +73,7 @@ public class Advanced_Happy_Ghast implements ModInitializer {
 							@Override
 							public ScreenHandler createMenu(int syncId, PlayerInventory playerInv, PlayerEntity playerEntity) {
 								GhastMenu menu = new GhastMenu(syncId, playerInv, data.inventory, data.level);
-
-								// This is the most important line to fix the "not eating" bug
 								menu.setGhastData(data);
-
 								return menu;
 							}
 						});
@@ -90,7 +81,6 @@ public class Advanced_Happy_Ghast implements ModInitializer {
 				}
 			});
 		});
-
 
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			dispatcher.register(literal("aghast")
@@ -100,25 +90,24 @@ public class Advanced_Happy_Ghast implements ModInitializer {
 								GhastWorldState state = GhastWorldState.getServerState(source.getServer());
 								source.sendFeedback(() -> Text.literal("§6--- Ghast World Settings ---"), false);
 								source.sendFeedback(() -> Text.literal("Lvl 1 Dist: §f" + state.level1DistanceReq + "m"), false);
+								source.sendFeedback(() -> Text.literal("Lvl 1 Bonus: §b+" + (state.level1SpeedBonus * 100) + "%"), false);
+								source.sendFeedback(() -> Text.literal("Lvl 2 Bonus: §b+" + (state.level2SpeedBonus * 100) + "%"), false);
+								source.sendFeedback(() -> Text.literal("Lvl 3 Bonus: §b+" + (state.level3SpeedBonus * 100) + "%"), false);
 								return 1;
 							})
 					)
-					// --- NEW SPAWN COMMAND ---
 					.then(literal("spawn")
 							.then(argument("level", IntegerArgumentType.integer(0, 3))
 									.executes(context -> {
 										int level = IntegerArgumentType.getInteger(context, "level");
 										ServerCommandSource source = context.getSource();
 										ServerPlayerEntity player = source.getPlayer();
-
 										if (player == null) return 0;
 
-										// Create and spawn the ghast
 										HappyGhastEntity ghast = new HappyGhastEntity(EntityType.HAPPY_GHAST, player.getEntityWorld());
 										ghast.refreshPositionAndAngles(player.getX(), player.getY(), player.getZ(), player.getYaw(), 0);
 										player.getEntityWorld().spawnEntity(ghast);
 
-										// Set the data
 										GhastData data = ghast.getAttached(GhastDataAttachment.GHAST_DATA);
 										if (data == null) {
 											data = new GhastData();
@@ -141,6 +130,42 @@ public class Advanced_Happy_Ghast implements ModInitializer {
 												state.level1DistanceReq = newValue;
 												state.markDirty();
 												context.getSource().sendFeedback(() -> Text.literal("§aDistance updated to: " + newValue), true);
+												return 1;
+											})
+									)
+							)
+							.then(literal("speed1")
+									.then(argument("value", DoubleArgumentType.doubleArg(0.0))
+											.executes(context -> {
+												double newValue = DoubleArgumentType.getDouble(context, "value");
+												GhastWorldState state = GhastWorldState.getServerState(context.getSource().getServer());
+												state.level1SpeedBonus = newValue;
+												state.markDirty();
+												context.getSource().sendFeedback(() -> Text.literal("§aLvl 1 Bonus set to: " + (newValue * 100) + "%"), true);
+												return 1;
+											})
+									)
+							)
+							.then(literal("speed2")
+									.then(argument("value", DoubleArgumentType.doubleArg(0.0))
+											.executes(context -> {
+												double newValue = DoubleArgumentType.getDouble(context, "value");
+												GhastWorldState state = GhastWorldState.getServerState(context.getSource().getServer());
+												state.level2SpeedBonus = newValue;
+												state.markDirty();
+												context.getSource().sendFeedback(() -> Text.literal("§aLvl 2 Bonus set to: " + (newValue * 100) + "%"), true);
+												return 1;
+											})
+									)
+							)
+							.then(literal("speed3")
+									.then(argument("value", DoubleArgumentType.doubleArg(0.0))
+											.executes(context -> {
+												double newValue = DoubleArgumentType.getDouble(context, "value");
+												GhastWorldState state = GhastWorldState.getServerState(context.getSource().getServer());
+												state.level3SpeedBonus = newValue;
+												state.markDirty();
+												context.getSource().sendFeedback(() -> Text.literal("§aLvl 3 Bonus set to: " + (newValue * 100) + "%"), true);
 												return 1;
 											})
 									)

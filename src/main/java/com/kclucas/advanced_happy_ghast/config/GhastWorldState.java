@@ -13,10 +13,11 @@ import net.minecraft.world.World;
 
 public class GhastWorldState extends PersistentState {
 
+    // NEW DEFAULTS
     public double level1DistanceReq = 2000.0;
-    public double level1SpeedBonus = 0.50;
-    public double level2SpeedBonus = 1.00;
-    public double level3SpeedBonus = 2.00;
+    public double level1SpeedBonus = 0.25;  // +50%  (Result: 0.050)
+    public double level2SpeedBonus = 0.50;  // +100% (Result: 0.075)
+    public double level3SpeedBonus = 1.00;  // +200% (Result: 0.100)
 
     public static final Codec<GhastWorldState> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.DOUBLE.fieldOf("level1DistanceReq").forGetter(s -> s.level1DistanceReq),
@@ -34,7 +35,6 @@ public class GhastWorldState extends PersistentState {
 
     public GhastWorldState() {}
 
-    // In your mappings, this is likely called 'save' instead of 'writeNbt'
     public NbtCompound save(NbtCompound nbt, RegistryWrapper.WrapperLookup registries) {
         nbt.putDouble("level1DistanceReq", level1DistanceReq);
         nbt.putDouble("level1SpeedBonus", level1SpeedBonus);
@@ -52,10 +52,7 @@ public class GhastWorldState extends PersistentState {
 
     public static GhastWorldState getServerState(MinecraftServer server) {
         PersistentStateManager persistentStateManager = server.getWorld(World.OVERWORLD).getPersistentStateManager();
-
-        // FIXED: Only pass the TYPE. The ID "advanced_happy_ghast_settings" is already inside the TYPE.
         GhastWorldState state = persistentStateManager.getOrCreate(TYPE);
-
         state.markDirty();
         return state;
     }

@@ -45,26 +45,25 @@ public class GhastScreen extends HandledScreen<GhastMenu> {
 
     @Override
     protected void drawForeground(DrawContext context, int mouseX, int mouseY) {
-        // Stats Text (Relative to box top-left at 0,0)
+        int lvl = Advanced_Happy_GhastClient.currentGhastLevel;
+        double spd = Advanced_Happy_GhastClient.currentGhastSpeed;
+
         context.drawText(this.textRenderer, "§e§nGhast Status", 10, 10, 0xFFFFFFFF, false);
-
         context.drawText(this.textRenderer, "Owner: §b" + Advanced_Happy_GhastClient.currentOwnerName, 10, 24, 0xFFFFFFFF, false);
-        context.drawText(this.textRenderer, "Level: " + Advanced_Happy_GhastClient.currentGhastLevel, 10, 34, 0xFFFFFFFF, false);
-        context.drawText(this.textRenderer, "Speed: " + String.format("%.3f", Advanced_Happy_GhastClient.currentGhastSpeed), 10, 44, 0xFFFFFFFF, false);
+        context.drawText(this.textRenderer, "Level: " + lvl, 10, 34, 0xFFFFFFFF, false);
 
-        String reqText = "";
-        if (Advanced_Happy_GhastClient.currentGhastLevel == 0) {
-            reqText = String.format("Dist: %.0f/%.0f", Advanced_Happy_GhastClient.currentGhastDistance, Advanced_Happy_GhastClient.currentMaxDistance);
-        } else if (Advanced_Happy_GhastClient.currentGhastLevel == 1) {
-            reqText = "Tears: " + Advanced_Happy_GhastClient.submittedTears + "/25";
-        } else if (Advanced_Happy_GhastClient.currentGhastLevel == 2) {
-            reqText = "Star: " + Advanced_Happy_GhastClient.submittedStars + "/1";
-        } else {
-            reqText = "§aMax Level";
-        }
+        // Show speed and bonus percentage
+        String speedStr = String.format("Speed: %.3f", spd);
+        context.drawText(this.textRenderer, speedStr, 10, 44, 0xFFFFFFFF, false);
+
+        // Progression Text
+        String reqText = (lvl == 0) ? String.format("Dist: %.0f/%.0f", Advanced_Happy_GhastClient.currentGhastDistance, Advanced_Happy_GhastClient.currentMaxDistance)
+                : (lvl == 1) ? "Tears: " + Advanced_Happy_GhastClient.submittedTears + "/25"
+                  : (lvl == 2) ? "Star: " + Advanced_Happy_GhastClient.submittedStars + "/1"
+                    : "§aMax Level";
+
         context.drawText(this.textRenderer, reqText, 10, 58, 0xFFFFFFFF, false);
 
-        // ALIGNMENT FIX: "Upgrade:" label is moved lower (y=17) to center with the slot
         context.drawText(this.textRenderer, "§8Upgrade:", 106, 17, 0xFF404040, false);
     }
 
