@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "advanced_happy_ghast",
+	"version": "${version}",
+	"name": "Advanced_Happy_Ghast",
+	"description": "This is an example description! Tell everyone what your mod is about!",
+	"authors": [
+		"Me!"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/advanced_happy_ghast/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.kclucas.advanced_happy_ghast.Advanced_Happy_Ghast"
+		],
+		"client": [
+			"com.kclucas.advanced_happy_ghast.client.Advanced_Happy_GhastClient"
+		]
+	},
+	"mixins": [
+		"advanced_happy_ghast.mixins.json",
+		{
+			"config": "advanced_happy_ghast.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.2",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}
