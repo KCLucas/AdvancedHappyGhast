@@ -14,12 +14,37 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.item.ItemStack;
 
 public class GhastProgressionSystem {
     private static final Identifier SPEED_MODIFIER_ID = Identifier.of("advanced_happy_ghast", "ghast_speed_bonus");
 
     public static void register() {
         ServerTickEvents.END_WORLD_TICK.register(GhastProgressionSystem::onWorldTick);
+        ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
+            if (!(entity instanceof HappyGhastEntity ghast)) return;
+
+            GhastData data = ghast.getAttached(GhastDataAttachment.GHAST_DATA);
+            if (data == null) return;
+
+            ServerWorld world = (ServerWorld) ghast.getEntityWorld();
+            double x = ghast.getX();
+            double y = ghast.getY();
+            double z = ghast.getZ();
+
+            for (int i = 0; i < 19; i++) {
+                ItemStack stack = data.inventory.getStack(i);
+                if (!stack.isEmpty()) {
+                    ItemEntity drop = new ItemEntity(world, x, y, z, stack.copy());
+                    drop.setToDefaultPickupDelay();
+                    world.spawnEntity(drop);
+                    data.inventory.setStack(i, ItemStack.EMPTY);
+                }
+            }
+        });
     }
 
     private static void onWorldTick(ServerWorld world) {
